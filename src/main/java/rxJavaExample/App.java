@@ -56,7 +56,28 @@ public class App {
                 .get()
                 .addHeader("application/json", "charset=utf-8")
                 .build();
+            
+        // using flowable
+        Flowable.create(new FlowableOnSubscribe<Response>() {
+            @Override 
+            public void subscribe(FlowableEmitter<Response> subscriber) {
+                try {
+                    Response response = client.newCall(request).execute();
+                    subscriber.onNext(response);
+                    subscriber.onComplete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    subscriber.onError(e);
+                }
+            }
+        }, BackpressureStrategy.BUFFER).subscribe(new Consumer<Response>() {
+            @Override 
+            public void accept(Response s) throws IOException {
+                System.out.println(s.body().string());
+            }
+        }); 
         
+        // using Observable
         Observable.create(new ObservableOnSubscribe<Response>() {
             @Override 
             public void subscribe(ObservableEmitter<Response> subscriber) {
