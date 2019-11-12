@@ -105,7 +105,6 @@ public class App {
                 } catch (IOException e){
                     e.printStackTrace();
                 }
-               
             }
 
             @Override 
@@ -117,7 +116,8 @@ public class App {
             public void onComplete(){
                 System.out.println("request complete");
             }
-        });  
+            
+        }); 
     }
 
 

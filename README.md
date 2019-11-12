@@ -45,6 +45,8 @@ simulate thread
 
 request with okhhtp
 
+use Flowable
+
 ```
     final OkHttpClient client = new OkHttpClient();
     final Request request = new Request.Builder()
@@ -53,22 +55,77 @@ request with okhhtp
             .addHeader("application/json", "charset=utf-8")
             .build();
 
-    Observable.create(new ObservableOnSubscribe<Response>() {
-        @Override 
-        public void subscribe(ObservableEmitter<Response> subscriber) {
-            try {
-                Response response = client.newCall(request).execute();
-                subscriber.onNext(response);
-                subscriber.onComplete();
-            } catch (IOException e) {
-                e.printStackTrace();
-                subscriber.onError(e);
+
+    Flowable.create(new FlowableOnSubscribe<Response>() {
+            @Override 
+            public void subscribe(FlowableEmitter<Response> subscriber) {
+                try {
+                    Response response = client.newCall(request).execute();
+                    subscriber.onNext(response);
+                    subscriber.onComplete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    subscriber.onError(e);
+                }
             }
-        }
-    }).subscribe(new Consumer<Response>() {
-        @Override 
-        public void accept(Response s) throws IOException {
-            System.out.println(s.body().string());
-        }
-    });
+        }, BackpressureStrategy.BUFFER).subscribe(new Consumer<Response>() {
+            @Override 
+            public void accept(Response s) throws IOException {
+                System.out.println(s.body().string());
+            }
+        }); 
+```
+
+use Observable
+
+```
+
+    final OkHttpClient client = new OkHttpClient();
+    final Request request = new Request.Builder()
+            .url("https://pariwisata-5a943.firebaseio.com/lokasi_wisata.json")
+            .get()
+            .addHeader("application/json", "charset=utf-8")
+            .build();
+
+            
+        Observable.create(new ObservableOnSubscribe<Response>() {
+            @Override 
+            public void subscribe(ObservableEmitter<Response> subscriber) {
+                try {
+                    Response response = client.newCall(request).execute();
+                    subscriber.onNext(response);
+                    subscriber.onComplete();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    subscriber.onError(e);
+                }
+            }
+            
+        }).subscribe(new Observer<Response>(){
+            @Override 
+            public void onSubscribe(Disposable d){
+                System.out.println(d.isDisposed() ? "disposed" : "dispose");
+            }
+
+            @Override 
+            public void onNext(Response s) {
+                try {
+                    System.out.println(s.body().string());
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+
+            @Override 
+            public void onError(Throwable e){
+                System.out.println(e.getMessage());
+            }
+
+            @Override 
+            public void onComplete(){
+                System.out.println("request complete");
+            }
+            
+        }); 
+
 ```
