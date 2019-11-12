@@ -9,6 +9,7 @@ import io.reactivex.rxjava3.core.*;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.schedulers.Schedulers;
 import okhttp3.*;
+import io.reactivex.rxjava3.disposables.Disposable;
 
 public class App {
     public static void main(String[] args) throws InterruptedException,IOException {
@@ -90,10 +91,31 @@ public class App {
                     subscriber.onError(e);
                 }
             }
-        }).subscribe(new Consumer<Response>() {
+            
+        }).subscribe(new Observer<Response>(){
             @Override 
-            public void accept(Response s) throws IOException {
-                System.out.println(s.body().string());
+            public void onSubscribe(Disposable d){
+                System.out.println(d.isDisposed() ? "disposed" : "dispose");
+            }
+
+            @Override 
+            public void onNext(Response s) {
+                try {
+                    System.out.println(s.body().string());
+                } catch (IOException e){
+                    e.printStackTrace();
+                }
+               
+            }
+
+            @Override 
+            public void onError(Throwable e){
+                System.out.println(e.getMessage());
+            }
+
+            @Override 
+            public void onComplete(){
+                System.out.println("request complete");
             }
         });  
     }
